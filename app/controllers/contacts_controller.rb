@@ -1,49 +1,42 @@
 class ContactsController < ApplicationController
-	def new
-  	@contact = Contact.new
-    render('contacts/new.html.erb')
-  end
- 
   def index
     @contacts = Contact.all
-    render('contacts/index.html.erb')
-  end
-
-  def show
-  	@contact = Contact.find(params[:id])
-  	render('contacts/show.html.erb')
-  end
-
-  def edit
-    @contact = Contact.find(params[:id])
-    render('contacts/edit.html.erb')
+    render :json => @contacts
   end
 
   def create
-   @contact = Contact.new(:name => params[:name],
-                              :email => params[:email],
-                              :phone => params[:phone])
+    @contact = Contact.new(contact_params)
+
     if @contact.save
-    	render('contacts/success.html.erb')
+      render :json => @contact, :status => 201
     else
-        render('contacts/new.html.erb')
+      render :json => @contact.errors, :status => 422
     end
   end
 
-   def update
+  def show
     @contact = Contact.find(params[:id])
-    if @contact.update(:name => params[:name],
-                       :email => params[:email],
-                       :phone => params[:phone])
-      render('contacts/success.html.erb')
+    render :json => @contact
+  end
+
+  def update
+    @contact = Contact.find(params[:id])
+    if @contact.update(contact_params)
+      head :no_content
     else
-      render('contacts/edit.html.erb')
+      render :json => @contact.errors, :status => 422
     end
   end
 
   def destroy
-  	@contact = Contact.find(params[:id])
-  	@contact.destroy
-  	render('contacts/destroy.html.erb')
+    @contact = Contact.find(params[:id])
+    @contact.destroy
+    head :no_content
+  end
+
+private
+
+  def contact_params
+    params.fetch(:contact).permit(:name, :email, :phone)
   end
 end
